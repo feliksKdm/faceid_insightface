@@ -44,7 +44,6 @@ def draw_on(new_image_path):
         rec_model.get(new_image, face)
         gender_age.get(new_image, face)
         new_embedding = face.normed_embedding
-        drow = app.draw_on(new_image, [face])
 
         if face.kps is not None:
                     kps = face.kps.astype(int)
