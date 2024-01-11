@@ -118,4 +118,4 @@ def matching(img, video):
     print(f"fake face detection: {liveness_notdetected}")
 
 # Run the matching function
-matching('/home/feliks/Downloads/photo_5256188845681137684_y.jpg')
+matching('/home/feliks/Downloads/photo_5256188845681137684_y.jpg', 'video')
