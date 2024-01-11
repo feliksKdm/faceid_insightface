@@ -63,6 +63,8 @@ def process_players(players, img):
             player_embeddings = np.stack(player_embeddings, axis=0)
             known_embeddings.append(player_embeddings[0:5])
             known_names += player_names[0:5]
+        
+        os.remove(photo_dir)
 
     return np.concatenate(known_embeddings, axis=0), known_names
 
@@ -98,12 +100,19 @@ def matching(img, video):
                     print(label)
                     if label == 2:
                         liveness_notdetected += 1
-                        if liveness_notdetected >= 500:
+                        if liveness_notdetected >= 15:
                             print('fake face detected')
+                            cap.release()
+                            cv2.destroyAllWindows()
+                    elif approved >= 20:
+                            mean_score = np.mean(recognized_scores) if recognized_scores else 0
+                            print(f"Mean Score: {mean_score}, {approved}")
+                            print(f"fake face detection: {liveness_notdetected}")
                             cap.release()
                             cv2.destroyAllWindows()
                     else:
                         approved += 1
+                        print(approved)
 
         # Display the resulting frame
         cv2.imshow('Video', frame)
@@ -118,4 +127,4 @@ def matching(img, video):
     print(f"fake face detection: {liveness_notdetected}")
 
 # Run the matching function
-matching('/home/feliks/Downloads/photo_5256188845681137684_y.jpg', 'video')
+matching('/home/feliks/Downloads/photo_5256188845681137684_y.jpg', '/home/feliks/Downloads/IMG_1393.mp4')
