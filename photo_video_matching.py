@@ -39,39 +39,42 @@ def process_players(players, img):
 
     for player in tqdm(players):
 
-        photo_dir = f"./data/db/{player}/{img.split('.')[0].split('/')[-1]}.jpg"
-        img_ = cv2.imread(img)
-        cv2.imwrite(photo_dir, img_)
+        # photo_dir = f"./data/db/{player}/{img.split('.')[0].split('/')[-1]}.jpg"
+        # img_ = cv2.imread(img)
+        # cv2.imwrite(photo_dir, img_)
+
         player_embeddings, player_names = [], []
-        img_paths = glob(f'./data/db/{player}/*')
+        # img_paths = glob(f'./data/db/{player}/*')
 
-        for img_path in img_paths:
-            img = cv2.imread(img_path)
-            if img is None: continue
+        # for img_path in img_paths:
 
-            bboxes, kpss = det_model.detect(img, max_num=0, metric='default')
-            if len(bboxes) != 1: continue
+        # if img is None: continue
 
-            face = Face(bbox=bboxes[0, :4], kps=kpss[0], det_score=bboxes[0, 4])
-            rec_model.get(img, face)
-            player_embeddings.append(face.normed_embedding)
-            player_names.append(player)
+        bboxes, kpss = det_model.detect(img, max_num=0, metric='default')
+        # if len(bboxes) != 1: continue
 
-            if len(player_embeddings) == 10: break
+        face = Face(bbox=bboxes[0, :4], kps=kpss[0], det_score=bboxes[0, 4])
+        rec_model.get(img, face)
+        player_embeddings.append(face.normed_embedding)
+        player_names.append(player)
+
+        # if len(player_embeddings) == 10: break
 
         if player_embeddings:
             player_embeddings = np.stack(player_embeddings, axis=0)
             known_embeddings.append(player_embeddings[0:5])
             known_names += player_names[0:5]
         
-        os.remove(photo_dir)
+        # os.remove(photo_dir)
 
     return np.concatenate(known_embeddings, axis=0), known_names
 
 # Main function for matching
 def matching(img, video):
 
-    players = os.listdir(f'./data/db')
+    # players = os.listdir(f'./data/db')
+    players = ['Verified']
+    img = cv2.imread(img)
 
     known_embeddings, known_names = process_players(players, img)
 
@@ -89,12 +92,16 @@ def matching(img, video):
         if len(bboxes) > 0:  # Run anti-spoofing check only if faces are detected
             for i, bbox in enumerate(bboxes):
                 face = Face(bbox=bbox[:4], kps=kpss[i])
+                bbox = bbox[:4]
+                x, y, width, height = bbox.astype(int)
 
                 # # Crop the image
                 rec_model.get(frame, face)
                 pred_name, scores = search_flatten(known_embeddings, known_names, [face.normed_embedding])
 
                 if pred_name[0] is not None:
+                    cv2.putText(frame, f'{pred_name[0]}', (x,y), cv2.FONT_HERSHEY_SIMPLEX ,  
+                1, (0, 255, 0), 2, cv2.LINE_AA) 
                     recognized_scores.append(scores[0])
                     label = test(image=frame, model_dir='resources/anti_spoof_models', device_id=0)
                     print(label)
@@ -127,4 +134,4 @@ def matching(img, video):
     print(f"fake face detection: {liveness_notdetected}")
 
 # Run the matching function
-matching('/home/feliks/Downloads/photo_5256188845681137684_y.jpg', '/home/feliks/Downloads/IMG_1393.mp4')
+# matching('/home/feliks/Downloads/photo_5256188845681137684_y.jpg', '/home/feliks/Downloads/IMG_1393.mp4')
